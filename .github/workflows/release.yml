@@ -1,0 +1,43 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile EXE and Package ZIP
+        shell: powershell
+        run: |
+          Install-Module ps2exe -Scope CurrentUser -Force
+          Invoke-ps2exe -inputFile 'DesktopShortcutTool.ps1' -outputFile 'DesktopShortcutTool.exe' -noConsole -STA -title '桌面快捷方式备份与恢复工具' -description '桌面快捷方式备份与恢复工具 (开源便携版)' -product 'DesktopShortcutTool' -version '1.0.0.0'
+          Compress-Archive -Path 'DesktopShortcutTool.exe', 'DesktopShortcutTool.ps1', 'launch.bat', 'README.md', 'LICENSE' -DestinationPath 'DesktopShortcutTool_Portable.zip' -Force
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            DesktopShortcutTool.exe
+            DesktopShortcutTool_Portable.zip
+          name: Desktop Shortcut Tool ${{ github.ref_name }} 便携版
+          body: |
+            ## 桌面快捷方式备份与恢复工具 ${{ github.ref_name }} 正式发布！
+            
+            ### ✨ 核心特性
+            - 专为 Windows 重装系统场景打造，一键无损复原桌面快捷方式及图标排布坐标
+            - 自动区分并备份「用户桌面」与「公共桌面」
+            - 智能新旧路径与盘符重映射（旧 D:\ ➔ 新 E:\）
+            - 单文件免安装，纯绿色无捆绑、零依赖
+            
+            ### ⚠️ 核心注意事项
+            - **在格式化系统盘重装前，请务必将本工具整个文件夹连同备份存放在系统 U 盘或移动硬盘中！**
