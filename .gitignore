@@ -4,6 +4,7 @@
 # Built binaries / local build output
 *.exe
 DesktopShortcutTool.exe
+*.zip
 
 # Icon layout exports and restore reports generated at runtime
 桌面图标布局.reg
